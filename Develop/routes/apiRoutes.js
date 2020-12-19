@@ -1,27 +1,35 @@
 const fs = require("fs");
 const path = require("path");
 const notes = require("../db/db.json");
+var data = JSON.parse(fs.readFileSync("./db/db.json", "utf8"));
 
-module.exports = function (app) {
-  app.get("/api/notes", function (req, res) {
-    res.json(notes);
-});
+module.exports = function(app) {
 
-app.post("/api/notes", function (req, res) {
-    const newNotes = req.body;
+    app.get("/api/notes", function(req, res) {
+       
+        res.json(data);
 
-    notes.push(newNotes);
+    });
 
-    res.json(newNotes);
+    app.get("/api/notes/:id", function(req, res) {
 
-    fs.writeFile(
-        path.join(__dirname, "../db/db.json"),
-        JSON.stringify(notes),
-        function (err) {
-          if (err) throw err;
+        res.json(data[Number(req.params.id)]);
 
-          res.json(true);
-        }
-      );
-    }
-});    
+    });
+
+
+    app.post("/api/notes", function(req, res) {
+
+        let newNote = req.body;
+        let uniqueId = (data.length).toString();
+        console.log(uniqueId);
+        newNote.id = uniqueId;
+        data.push(newNote);
+        
+        fs.writeFileSync("./db/db.json", JSON.stringify(data), function(err) {
+            if (err) throw (err);        
+        }); 
+
+        res.json(data);    
+
+    });
